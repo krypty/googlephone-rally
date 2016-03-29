@@ -25,9 +25,9 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import ch.hes_so.master.phonerally.bluetooth2.BluetoothChatService;
-import ch.hes_so.master.phonerally.bluetooth2.Constants;
-import ch.hes_so.master.phonerally.bluetooth2.DeviceListActivity;
+import ch.hes_so.master.phonerally.bluetooth.BluetoothChatService;
+import ch.hes_so.master.phonerally.bluetooth.Constants;
+import ch.hes_so.master.phonerally.bluetooth.DeviceListActivity;
 
 public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();

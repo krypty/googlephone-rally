@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.hes_so.master.phonerally.bluetooth2;
+package ch.hes_so.master.phonerally.bluetooth;
 
 /**
  * Defines several constants used between {@link BluetoothChatService} and the UI.

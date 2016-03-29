@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.hes_so.master.phonerally.bluetooth2;
+package ch.hes_so.master.phonerally.bluetooth;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
