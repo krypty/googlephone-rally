@@ -31,6 +31,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import ch.hes_so.master.phonerally.command.Command;
+import ch.hes_so.master.phonerally.command.CommandEncoder;
+
 /**
  * This class does all the work for setting up and managing Bluetooth
  * connections with other devices. It has a thread that listens for
@@ -239,7 +242,7 @@ public class BluetoothChatService {
      * @param out The bytes to write
      * @see ConnectedThread#write(byte[])
      */
-    public void write(byte[] out) {
+    public void write(Command cmd) {
         // Create temporary object
         ConnectedThread r;
         // Synchronize a copy of the ConnectedThread
@@ -248,6 +251,7 @@ public class BluetoothChatService {
             r = mConnectedThread;
         }
         // Perform the write unsynchronized
+        byte[] out = CommandEncoder.toStream(cmd);
         r.write(out);
     }
 

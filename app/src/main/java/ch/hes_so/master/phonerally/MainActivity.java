@@ -28,6 +28,9 @@ import java.util.List;
 import ch.hes_so.master.phonerally.bluetooth.BluetoothChatService;
 import ch.hes_so.master.phonerally.bluetooth.Constants;
 import ch.hes_so.master.phonerally.bluetooth.DeviceListActivity;
+import ch.hes_so.master.phonerally.command.Command;
+import ch.hes_so.master.phonerally.command.CommandEncoder;
+import ch.hes_so.master.phonerally.command.CommandFactory;
 
 public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -197,8 +200,8 @@ public class MainActivity extends Activity {
         // Check that there's actually something to send
         if (message.length() > 0) {
             // Get the message bytes and tell the BluetoothChatService to write
-            byte[] send = message.getBytes();
-            mChatService.write(send);
+            Command cmd = CommandFactory.createDebugCommand(message);
+            mChatService.write(cmd);
 
             // Reset out string buffer to zero and clear the edit text field
             mOutStringBuffer.setLength(0);
@@ -276,10 +279,11 @@ public class MainActivity extends Activity {
                     mConversationArrayAdapter.add("Me:  " + writeMessage);
                     break;
                 case Constants.MESSAGE_READ:
-                    byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
+                    byte[] readBuf = (byte[]) msg.obj;
                     String readMessage = new String(readBuf, 0, msg.arg1);
-                    mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
+                    Command cmd = CommandEncoder.fromStream(readMessage);
+                    onCommandReceived(cmd);
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
@@ -369,6 +373,11 @@ public class MainActivity extends Activity {
             }
         }
         return false;
+    }
+
+    private void onCommandReceived(Command cmd) {
+        String msg = cmd.getName() + ", " + cmd.getParameter();
+        mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + msg);
     }
 
 //    private void startNextActivity() {
