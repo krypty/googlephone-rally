@@ -6,6 +6,10 @@
     <!-- prefs -->
     <string name="pref_bt_device_address">pref_bt_device_address</string>
 
+    <!-- MainActivity -->
+    <string name="start_game">Start Game</string>
+    <string name="default_bluetooth_status">status unknown</string>
+
     <!--  BluetoothChat -->
     <string name="send">Send</string>
     <string name="not_connected">You are not connected to a device</string>
