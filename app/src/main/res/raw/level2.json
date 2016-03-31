@@ -1,0 +1,29 @@
+{
+  "name": "Forest Rally",
+  "checkpoints": [
+    {
+      "lat": 2.1,
+      "long": 2.2,
+      "range": 20,
+      "content": "http://www.hes-so.ch/"
+    },
+    {
+      "lat": 2.3,
+      "long": 2.4,
+      "range": 5,
+      "content": "http://www.github.ch/"
+    },
+    {
+      "lat": 2.5,
+      "long": 2.6,
+      "range": 30,
+      "content": "http://www.google.ch/"
+    },
+    {
+      "lat": 2.7,
+      "long": 2.8,
+      "range": 25,
+      "content": "http://www.yahoo.ch/"
+    }
+  ]
+}

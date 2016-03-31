@@ -22,7 +22,7 @@ import ch.hes_so.master.phonerally.bluetooth.Constants;
 import ch.hes_so.master.phonerally.bluetooth.DeviceListActivity;
 import ch.hes_so.master.phonerally.command.Command;
 import ch.hes_so.master.phonerally.command.CommandFactory;
-import ch.hes_so.master.phonerally.game.GameActivity;
+import ch.hes_so.master.phonerally.select_levels.SelectLevelActivity;
 
 public class MainActivity extends Activity {
 
@@ -78,7 +78,7 @@ public class MainActivity extends Activity {
 //                }
 
                 // start game activity
-                Intent intent = new Intent(MainActivity.this, GameActivity.class);
+                Intent intent = new Intent(MainActivity.this, SelectLevelActivity.class);
                 startActivity(intent);
             }
         });

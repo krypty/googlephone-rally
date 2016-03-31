@@ -1,0 +1,29 @@
+{
+  "name": "College Rally",
+  "checkpoints": [
+    {
+      "lat": 1.1,
+      "long": 1.2,
+      "range": 20,
+      "content": "http://www.hes-so.ch/"
+    },
+    {
+      "lat": 1.3,
+      "long": 1.4,
+      "range": 5,
+      "content": "http://www.github.ch/"
+    },
+    {
+      "lat": 1.5,
+      "long": 1.6,
+      "range": 30,
+      "content": "http://www.google.ch/"
+    },
+    {
+      "lat": 1.7,
+      "long": 1.8,
+      "range": 25,
+      "content": "http://www.yahoo.ch/"
+    }
+  ]
+}
