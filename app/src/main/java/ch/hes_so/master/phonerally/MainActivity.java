@@ -22,6 +22,7 @@ import ch.hes_so.master.phonerally.bluetooth.Constants;
 import ch.hes_so.master.phonerally.bluetooth.DeviceListActivity;
 import ch.hes_so.master.phonerally.command.Command;
 import ch.hes_so.master.phonerally.command.CommandFactory;
+import ch.hes_so.master.phonerally.game.GameActivity;
 
 public class MainActivity extends Activity {
 
@@ -74,7 +75,10 @@ public class MainActivity extends Activity {
                     Toast.makeText(getApplicationContext(), R.string.not_connected, Toast.LENGTH_SHORT).show();
                     return;
                 }
-//                startNextActivity();
+
+                // start game activity
+                Intent intent = new Intent(MainActivity.this, GameActivity.class);
+                startActivity(intent);
             }
         });
 
