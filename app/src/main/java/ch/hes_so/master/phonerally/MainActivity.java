@@ -71,10 +71,11 @@ public class MainActivity extends Activity {
         mStartGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
-                    Toast.makeText(getApplicationContext(), R.string.not_connected, Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                // TODO: 31.03.16 uncomment this
+//                if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+//                    Toast.makeText(getApplicationContext(), R.string.not_connected, Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
 
                 // start game activity
                 Intent intent = new Intent(MainActivity.this, GameActivity.class);

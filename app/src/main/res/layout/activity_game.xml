@@ -12,7 +12,11 @@
     <ListView
         android:id="@+id/lvCheckpoints"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:divider="@android:color/transparent"
+        android:listSelector="@android:color/transparent"
+        android:stackFromBottom="true">
 
     </ListView>
 </RelativeLayout>
