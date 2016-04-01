@@ -6,25 +6,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import android.widget.TextView;
 
 import ch.hes_so.master.phonerally.R;
+import ch.hes_so.master.phonerally.level.Checkpoint;
 
-public class CheckpointAdapter extends ArrayAdapter<ListCheckpointModel> {
-
-
+public class CheckpointAdapter extends ArrayAdapter<Checkpoint> {
     private final Context mContext;
-    private final ListCheckpointModel[] mValues;
 
-    public CheckpointAdapter(Context context, ListCheckpointModel[] values) {
-        super(context, android.R.layout.activity_list_item, values);
+    public CheckpointAdapter(Context context) {
+        super(context, android.R.layout.activity_list_item);
         mContext = context;
 
-        // reverse array to make items appear bottom to top
-        mValues = reverseArray(values);
+//        // reverse array to make items appear bottom to top
+//        mValues = reverseArray(values);
     }
 
     @Override
@@ -33,23 +28,28 @@ public class CheckpointAdapter extends ArrayAdapter<ListCheckpointModel> {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.checkpoint_row_layout, parent, false);
 
-        if (mValues[position].isReached()) {
+        // get the real position, not the hacked/overrided one using this.getItem()
+        Checkpoint checkpoint = super.getItem(position);
+
+        if (checkpoint.isReached()) {
             ImageView ivCheckpoint = (ImageView) rowView.findViewById(R.id.ivCheckpoint);
             ivCheckpoint.setImageResource(R.drawable.checkpoint_reached);
         }
 
+        TextView checkpointRightLabel = (TextView) rowView.findViewById(R.id.tvCheckpointRight);
+        String rightLabel = checkpoint.getRange() + " {";
+        checkpointRightLabel.setText(rightLabel);
+
         return rowView;
     }
 
+
+    /**
+     * return the item in <b>reversed</b> position
+     */
     @Override
-    public ListCheckpointModel getItem(int position) {
+    public Checkpoint getItem(int position) {
         // reverse items to make items appear bottom to top
         return super.getItem(getCount() - 1 - position);
-    }
-
-    private static ListCheckpointModel[] reverseArray(ListCheckpointModel[] arr) {
-        List<ListCheckpointModel> list = Arrays.asList(arr);
-        Collections.reverse(list);
-        return (ListCheckpointModel[]) list.toArray();
     }
 }

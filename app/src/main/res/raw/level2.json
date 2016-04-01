@@ -24,6 +24,18 @@
       "long": 2.8,
       "range": 25,
       "content": "http://www.yahoo.ch/"
+    },
+    {
+      "lat": 2.9,
+      "long": 2.11,
+      "range": 32,
+      "content": "http://www.msn.com/"
+    },
+    {
+      "lat": 2.12,
+      "long": 2.13,
+      "range": 16,
+      "content": "http://www.9gag.com/"
     }
   ]
 }

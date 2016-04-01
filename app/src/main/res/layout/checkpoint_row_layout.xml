@@ -18,9 +18,12 @@
         android:scaleType="fitCenter"
         android:src="@drawable/checkpoint" />
 
-    <Space
+    <TextView
+        android:id="@+id/tvCheckpointRight"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:textSize="24sp" />
 
 </LinearLayout>
