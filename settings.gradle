@@ -1,1 +1,2 @@
-include ':app'
+include ':glassrallylibs', ':app'
+project(':glassrallylibs').projectDir = new File(settingsDir, '../GlassRallyCommon/glassrallylibs')

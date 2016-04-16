@@ -17,11 +17,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import ch.hes_so.master.phonerally.bluetooth.BluetoothChatService;
-import ch.hes_so.master.phonerally.bluetooth.Constants;
+import ch.hes_so.glassrallylibs.bluetooth.BluetoothChatService;
+import ch.hes_so.glassrallylibs.bluetooth.Constants;
+import ch.hes_so.glassrallylibs.bluetooth.command.Command;
+import ch.hes_so.glassrallylibs.bluetooth.command.CommandFactory;
 import ch.hes_so.master.phonerally.bluetooth.DeviceListActivity;
-import ch.hes_so.master.phonerally.command.Command;
-import ch.hes_so.master.phonerally.command.CommandFactory;
 import ch.hes_so.master.phonerally.select_levels.SelectLevelActivity;
 
 public class MainActivity extends Activity {
