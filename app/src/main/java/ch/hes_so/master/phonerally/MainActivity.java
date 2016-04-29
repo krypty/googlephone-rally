@@ -1,10 +1,13 @@
 package ch.hes_so.master.phonerally;
 
+import android.Manifest;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -16,6 +19,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 import ch.hes_so.glassrallylibs.bluetooth.BluetoothChatService;
 import ch.hes_so.glassrallylibs.bluetooth.Constants;
@@ -32,7 +37,6 @@ public class MainActivity extends Activity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-
     /**
      * Name of the connected device
      */
@@ -48,6 +52,11 @@ public class MainActivity extends Activity {
      */
     private BluetoothChatService mChatService = null;
 
+    //Location permissions
+    private static final int REQUEST_CODE_SOME_FEATURES_PERMISSIONS = 666;
+    private ArrayList<String> locationPermissions;
+
+
     private Button mStartGameButton;
     private TextView mBluetoothStatusView;
 
@@ -57,6 +66,9 @@ public class MainActivity extends Activity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        this.locationPermissions = new ArrayList<>();
+        askLocationPermissions();
 
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -124,6 +136,28 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.bluetooth_chat, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.secure_connect_scan: {
+                // Launch the DeviceListActivity to see devices and do scan
+                Intent serverIntent = new Intent(this, DeviceListActivity.class);
+                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ==== BLUETOOTH
+
     /**
      * Set up the UI and background operations for chat.
      */
@@ -181,6 +215,29 @@ public class MainActivity extends Activity {
         mBluetoothStatusView.setText(subTitle);
     }
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CONNECT_DEVICE_SECURE:
+                // When DeviceListActivity returns with a device to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    connectDevice(data, true);
+                }
+                break;
+            case REQUEST_ENABLE_BT:
+                // When the request to enable Bluetooth returns
+                if (resultCode == Activity.RESULT_OK) {
+                    // Bluetooth is now enabled, so set up a chat session
+                    setupChat();
+                } else {
+                    // User did not enable Bluetooth or an error occurred
+                    Log.d(TAG, "BT not enabled");
+                    Toast.makeText(getApplicationContext(), R.string.bt_not_enabled_leaving,
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+        }
+    }
+
     /**
      * The Handler that gets information back from the BluetoothChatService
      */
@@ -229,29 +286,6 @@ public class MainActivity extends Activity {
         }
     };
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_CONNECT_DEVICE_SECURE:
-                // When DeviceListActivity returns with a device to connect
-                if (resultCode == Activity.RESULT_OK) {
-                    connectDevice(data, true);
-                }
-                break;
-            case REQUEST_ENABLE_BT:
-                // When the request to enable Bluetooth returns
-                if (resultCode == Activity.RESULT_OK) {
-                    // Bluetooth is now enabled, so set up a chat session
-                    setupChat();
-                } else {
-                    // User did not enable Bluetooth or an error occurred
-                    Log.d(TAG, "BT not enabled");
-                    Toast.makeText(getApplicationContext(), R.string.bt_not_enabled_leaving,
-                            Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-        }
-    }
-
     /**
      * Establish connection with other device
      *
@@ -268,29 +302,64 @@ public class MainActivity extends Activity {
         mChatService.connect(device, secure);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.bluetooth_chat, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.secure_connect_scan: {
-                // Launch the DeviceListActivity to see devices and do scan
-                Intent serverIntent = new Intent(this, DeviceListActivity.class);
-                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void onCommandReceived(Command cmd) {
         String msg = cmd.getName() + ", " + cmd.getParameter();
         Toast.makeText(getApplicationContext(), mConnectedDeviceName + ":  " + msg, Toast.LENGTH_LONG).show();
+    }
+
+
+    // ==== LOCATION
+    private void askLocationPermissions() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            // older android version grant permissions automatically (no popups) --> nothing to do
+            return;
+        }
+
+        int hasLocationFinePermission = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+        int hasLocationCoarsePermission = checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        if (hasLocationFinePermission != PackageManager.PERMISSION_GRANTED) {
+            this.locationPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+        if (hasLocationCoarsePermission != PackageManager.PERMISSION_GRANTED) {
+            this.locationPermissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        }
+
+        if (!this.locationPermissions.isEmpty()) {
+            requestPermissions(this.locationPermissions.toArray(new String[this.locationPermissions.size()]), REQUEST_CODE_SOME_FEATURES_PERMISSIONS);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_SOME_FEATURES_PERMISSIONS: {
+                int grantedPermissions = 0;
+
+                // count how many permissions have been granted
+                for (int i = 0; i < permissions.length; i++) {
+                    if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                        grantedPermissions++;
+                    }
+                }
+
+                // all permissions have been accepted by the user
+                if (grantedPermissions == this.locationPermissions.size()) {
+                    return;
+                } else {
+                    Log.e(TAG, "permissions not granted by the user");
+                    Toast.makeText(getApplicationContext(), getString(R.string.must_accept_permissions), Toast.LENGTH_LONG).show();
+
+                    finish();
+                }
+            }
+            break;
+            default: {
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            }
+        }
+
     }
 
 //    private void startNextActivity() {

@@ -1,6 +1,7 @@
 package ch.hes_so.master.phonerally.game;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Window;
@@ -17,6 +18,7 @@ import ch.hes_so.master.phonerally.level.LevelLoader;
 import ch.hes_so.master.phonerally.select_levels.SelectLevelActivity;
 
 public class GameActivity extends Activity {
+    private static final String TAG = GameActivity.class.getSimpleName();
 
     private ListView checkpointsListView;
     private CheckpointAdapter checkpointAdapter;
@@ -43,6 +45,7 @@ public class GameActivity extends Activity {
 
 
         // TODO: 31.03.16 start game loop here (using a service/thread), code in an other class please...
+        startGameService();
 
         // TODO: 31.03.16 remove me: draft code to update the list adapter
         Handler handler = new Handler();
@@ -50,13 +53,16 @@ public class GameActivity extends Activity {
 
             @Override
             public void run() {
-                Toast.makeText(GameActivity.this, "lalalal", Toast.LENGTH_LONG).show();
-
                 checkpointAdapter.getItem(0).setReached(true);
                 checkpointAdapter.notifyDataSetChanged();
             }
 
         }, 2000); // 2000ms delay
+    }
+
+    private void startGameService() {
+        Intent gameServiceIntent = new Intent(getApplicationContext(), GameService.class);
+        startService(gameServiceIntent);
     }
 
     private void buildCheckpointList(String levelToLoad) {

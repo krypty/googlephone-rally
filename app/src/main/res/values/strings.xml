@@ -9,6 +9,7 @@
     <!-- MainActivity -->
     <string name="start_game">Start Game</string>
     <string name="default_bluetooth_status">status unknown</string>
+    <string name="must_accept_permissions">You must accept all the permissions to use this app</string>
 
     <!--  BluetoothChat -->
     <string name="send">Send</string>
