@@ -24,6 +24,7 @@ public class GameService extends Service implements LocationListener {
     private IGameService callback;
     private boolean isRunning = false;
     private Location currentLocation;
+    private LocationManager locationManager;
 
     @Override
     public void onCreate() {
@@ -32,7 +33,7 @@ public class GameService extends Service implements LocationListener {
         Log.d(TAG, "service created");
 
         // Acquire a reference to the system Location Manager
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.e(TAG, "Location permission not granted by the user, service is shutting down");
@@ -55,6 +56,11 @@ public class GameService extends Service implements LocationListener {
     public void onDestroy() {
         this.isRunning = false;
         Log.d(TAG, "onDestroy");
+        
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        locationManager.removeUpdates(this);
         super.onDestroy();
     }
 
