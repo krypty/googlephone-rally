@@ -72,8 +72,8 @@ public class GameActivity extends Activity implements GameService.IGameService {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onDestroy() {
+        super.onDestroy();
         if (this.bounded) {
             unbindService(serviceConn);
             this.bounded = false;
