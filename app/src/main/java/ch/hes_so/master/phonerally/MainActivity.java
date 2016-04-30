@@ -5,7 +5,9 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +21,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.ArrayList;
 
@@ -56,6 +68,10 @@ public class MainActivity extends Activity {
     private static final int REQUEST_CODE_SOME_FEATURES_PERMISSIONS = 666;
     private ArrayList<String> locationPermissions;
 
+    /**
+     * Constant used in the location settings dialog.
+     */
+    protected static final int REQUEST_CHECK_SETTINGS = 100;
 
     private Button mStartGameButton;
     private TextView mBluetoothStatusView;
@@ -217,13 +233,14 @@ public class MainActivity extends Activity {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case REQUEST_CONNECT_DEVICE_SECURE:
+            case REQUEST_CONNECT_DEVICE_SECURE: {
                 // When DeviceListActivity returns with a device to connect
                 if (resultCode == Activity.RESULT_OK) {
                     connectDevice(data, true);
                 }
                 break;
-            case REQUEST_ENABLE_BT:
+            }
+            case REQUEST_ENABLE_BT: {
                 // When the request to enable Bluetooth returns
                 if (resultCode == Activity.RESULT_OK) {
                     // Bluetooth is now enabled, so set up a chat session
@@ -235,6 +252,20 @@ public class MainActivity extends Activity {
                             Toast.LENGTH_SHORT).show();
                     finish();
                 }
+                break;
+            }
+            case REQUEST_CHECK_SETTINGS: {
+                switch (resultCode) {
+                    case Activity.RESULT_CANCELED:
+                        Log.i(TAG, "User chose not to make required location settings changes.");
+                        Toast.makeText(getApplicationContext(), getString(R.string.must_enable_location), Toast.LENGTH_LONG).show();
+                        finish();
+                        break;
+                }
+                break;
+            }
+
+
         }
     }
 
@@ -329,6 +360,8 @@ public class MainActivity extends Activity {
         if (!this.locationPermissions.isEmpty()) {
             requestPermissions(this.locationPermissions.toArray(new String[this.locationPermissions.size()]), REQUEST_CODE_SOME_FEATURES_PERMISSIONS);
         }
+
+        displayLocationSettingsRequest(getApplicationContext());
     }
 
     @Override
@@ -360,6 +393,48 @@ public class MainActivity extends Activity {
             }
         }
 
+    }
+
+    //source: http://stackoverflow.com/a/33254073
+    private void displayLocationSettingsRequest(Context context) {
+        GoogleApiClient googleApiClient = new GoogleApiClient.Builder(context)
+                .addApi(LocationServices.API).build();
+        googleApiClient.connect();
+
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(10000 / 2);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
+        builder.setAlwaysShow(true);
+
+        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            @Override
+            public void onResult(LocationSettingsResult result) {
+                final Status status = result.getStatus();
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        Log.i(TAG, "All location settings are satisfied.");
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        Log.i(TAG, "Location settings are not satisfied. Show the user a dialog to upgrade location settings ");
+
+                        try {
+                            // Show the dialog by calling startResolutionForResult(), and check the result
+                            // in onActivityResult().
+                            status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
+                        } catch (IntentSender.SendIntentException e) {
+                            Log.i(TAG, "PendingIntent unable to execute request.");
+                        }
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        Log.i(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog not created.");
+                        break;
+                }
+            }
+        });
     }
 
 //    private void startNextActivity() {
