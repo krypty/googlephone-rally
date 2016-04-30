@@ -13,6 +13,8 @@ import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
+import ch.hes_so.master.phonerally.geolocation.LocationUtils;
+
 public class GameService extends Service implements LocationListener {
     private static final String TAG = GameService.class.getSimpleName();
 
@@ -21,6 +23,7 @@ public class GameService extends Service implements LocationListener {
 
     private IGameService callback;
     private boolean isRunning = false;
+    private Location currentLocation;
 
     @Override
     public void onCreate() {
@@ -76,6 +79,11 @@ public class GameService extends Service implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "new location: " + location.toString());
+
+        if (LocationUtils.isBetterLocation(location, currentLocation)) {
+            currentLocation = location;
+            fireNewVector("better location: " + currentLocation);
+        }
     }
 
     @Override
