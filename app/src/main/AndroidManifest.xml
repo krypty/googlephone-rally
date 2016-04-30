@@ -27,14 +27,14 @@
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/select_device"
             android:theme="@android:style/Theme.Holo.Dialog" />
-        <activity android:name=".game.GameActivity" />
         <activity
             android:name=".select_levels.SelectLevelActivity"
             android:label="@string/title_activity_select_level" />
+        <activity android:name=".game.GameActivity" />
 
         <service
             android:name=".game.GameService"
-            android:exported="false"></service>
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -1,9 +1,13 @@
 package ch.hes_so.master.phonerally.game;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.Window;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -17,11 +21,14 @@ import ch.hes_so.master.phonerally.level.LevelConstants;
 import ch.hes_so.master.phonerally.level.LevelLoader;
 import ch.hes_so.master.phonerally.select_levels.SelectLevelActivity;
 
-public class GameActivity extends Activity {
+public class GameActivity extends Activity implements GameService.IGameService {
     private static final String TAG = GameActivity.class.getSimpleName();
 
     private ListView checkpointsListView;
     private CheckpointAdapter checkpointAdapter;
+
+    private boolean bounded;
+    private GameService gameService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +50,6 @@ public class GameActivity extends Activity {
 
         buildCheckpointList(levelToLoad);
 
-
-        // TODO: 31.03.16 start game loop here (using a service/thread), code in an other class please...
-        startGameService();
-
         // TODO: 31.03.16 remove me: draft code to update the list adapter
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -60,10 +63,40 @@ public class GameActivity extends Activity {
         }, 2000); // 2000ms delay
     }
 
-    private void startGameService() {
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "startGameService");
         Intent gameServiceIntent = new Intent(getApplicationContext(), GameService.class);
-        startService(gameServiceIntent);
+        bindService(gameServiceIntent, serviceConn, BIND_AUTO_CREATE);
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (this.bounded) {
+            unbindService(serviceConn);
+            this.bounded = false;
+        }
+    }
+
+    private ServiceConnection serviceConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG, "onServiceConnected");
+            gameService = ((GameService.Binder) service).getService();
+            gameService.register(GameActivity.this);
+            bounded = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "onServiceDisconnected");
+            if (gameService != null)
+                gameService.unregister(GameActivity.this);
+            bounded = false;
+        }
+    };
 
     private void buildCheckpointList(String levelToLoad) {
         new LevelLoader(getApplicationContext(), levelToLoad) {
@@ -89,5 +122,10 @@ public class GameActivity extends Activity {
                 setProgressBarIndeterminateVisibility(false);
             }
         }.execute();
+    }
+
+    @Override
+    public void onNextVectorComputed(String msg) {
+        Log.d(TAG, msg);
     }
 }
