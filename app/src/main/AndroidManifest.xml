@@ -35,6 +35,10 @@
         <service
             android:name=".game.GameService"
             android:exported="false" />
+
+        <service
+            android:name="ch.hes_so.glassrallylibs.bluetooth.BluetoothService"
+            android:exported="true" />
     </application>
 
 </manifest>
