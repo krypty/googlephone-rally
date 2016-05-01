@@ -2,8 +2,10 @@ package ch.hes_so.master.phonerally.game;
 
 import android.Manifest;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -15,22 +17,28 @@ import android.util.Log;
 
 import java.util.List;
 
+import ch.hes_so.glassrallylibs.bluetooth.BluetoothService;
+import ch.hes_so.glassrallylibs.command.Command;
+import ch.hes_so.glassrallylibs.command.CommandFactory;
 import ch.hes_so.master.phonerally.geolocation.LocationUtils;
 import ch.hes_so.master.phonerally.level.Checkpoint;
 import ch.hes_so.master.phonerally.level.Level;
 import ch.hes_so.master.phonerally.level.LevelLoader;
 
-public class GameService extends Service implements LocationListener {
+public class GameService extends Service implements LocationListener, BluetoothService.IBluetoothService {
     private static final String TAG = GameService.class.getSimpleName();
 
     // Binder given to clients
-    private Binder binder = new Binder();
+    private Binder gameBinder = new Binder();
 
     private IGameService callback;
     private boolean isRunning = false;
     private Location currentLocation;
     private LocationManager locationManager;
     private String levelName;
+
+    private BluetoothService btService;
+    private boolean bounded;
 
     @Override
     public void onCreate() {
@@ -50,12 +58,9 @@ public class GameService extends Service implements LocationListener {
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 
-        startGameLoop();
-    }
+        setupBluetoothService();
 
-    private void startGameLoop() {
-        this.isRunning = true;
-        new Thread(this.gameLoop).start();
+        startGameLoop();
     }
 
     @Override
@@ -70,6 +75,55 @@ public class GameService extends Service implements LocationListener {
         super.onDestroy();
     }
 
+    // ==== BLUETOOTH
+
+    private ServiceConnection serviceConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG, "onServiceConnected");
+            btService = ((BluetoothService.BluetoothBinder) service).getService();
+            btService.register(GameService.this);
+            bounded = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "onServiceDisconnected");
+            if (btService != null)
+                btService.unregister(GameService.this);
+            bounded = false;
+        }
+    };
+
+    private void setupBluetoothService() {
+        Log.d(TAG, "setupBluetoothService()");
+
+        Intent intent = new Intent(getApplicationContext(), BluetoothService.class);
+        bindService(intent, serviceConn, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onCommandReceived(Command cmd) {
+        Log.d(TAG, "command received");
+    }
+
+    @Override
+    public void bluetoothStateChanged(int state) {
+        // nothing
+    }
+
+    @Override
+    public void deviceNameChanged(String device) {
+        // nothing
+    }
+
+
+    // ==== GAME LOOP
+    private void startGameLoop() {
+        this.isRunning = true;
+        new Thread(this.gameLoop).start();
+    }
+
     private Runnable gameLoop = new Runnable() {
         @Override
         public void run() {
@@ -80,6 +134,9 @@ public class GameService extends Service implements LocationListener {
 
                     // 1. Load level
                     new LevelLoader(getApplicationContext(), levelName) {
+                        // greater than 360 so it will be sent the first time
+                        public double currentAngle = 500;
+
                         @Override
                         protected void onPostExecute(Level level) {
                             // GPS is not fixed yet
@@ -106,14 +163,22 @@ public class GameService extends Service implements LocationListener {
                             Log.d(TAG, "angle: " + angle);
 
                             // 4. Send vector
+
+//                            // don't send the angle if still the same
+//                            if (Math.abs(currentAngle - angle) < 1e3) {
+//                                return;
+//                            }
+
+                            currentAngle = angle;
                             fireNewVector("distance fired: " + distance);
+                            sendVector(currentAngle);
 
 
                         }
                     }.execute();
 
                     // wait between each iteration
-                    Thread.sleep(2000);
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
@@ -121,6 +186,15 @@ public class GameService extends Service implements LocationListener {
             }
         }
     };
+
+    private void sendVector(double angle) {
+        if (!btService.isConnected()) {
+            Log.e(TAG, "bluetooth device not connected !");
+        }
+
+        Command cmd = CommandFactory.createDebugCommand("angle: " + angle);
+        btService.sendCommand(cmd);
+    }
 
 
     @Override
@@ -148,7 +222,6 @@ public class GameService extends Service implements LocationListener {
         Log.d(TAG, "onProviderDisabled: " + provider);
     }
 
-
     // ==== Activity communication
     public class Binder extends android.os.Binder {
         GameService getService() {
@@ -162,7 +235,7 @@ public class GameService extends Service implements LocationListener {
         if (lvl != null) {
             this.levelName = lvl;
         }
-        return this.binder;
+        return this.gameBinder;
     }
 
     public interface IGameService {
