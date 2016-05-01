@@ -13,7 +13,12 @@ import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
+import java.util.List;
+
 import ch.hes_so.master.phonerally.geolocation.LocationUtils;
+import ch.hes_so.master.phonerally.level.Checkpoint;
+import ch.hes_so.master.phonerally.level.Level;
+import ch.hes_so.master.phonerally.level.LevelLoader;
 
 public class GameService extends Service implements LocationListener {
     private static final String TAG = GameService.class.getSimpleName();
@@ -25,6 +30,7 @@ public class GameService extends Service implements LocationListener {
     private boolean isRunning = false;
     private Location currentLocation;
     private LocationManager locationManager;
+    private String levelName;
 
     @Override
     public void onCreate() {
@@ -56,7 +62,7 @@ public class GameService extends Service implements LocationListener {
     public void onDestroy() {
         this.isRunning = false;
         Log.d(TAG, "onDestroy");
-        
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -72,7 +78,42 @@ public class GameService extends Service implements LocationListener {
                     String msg = "I'm alive !";
                     fireNewVector(msg);
 
-                    Thread.sleep(1000);
+                    // 1. Load level
+                    new LevelLoader(getApplicationContext(), levelName) {
+                        @Override
+                        protected void onPostExecute(Level level) {
+                            // GPS is not fixed yet
+                            if (currentLocation == null) {
+                                return;
+                            }
+
+                            // 2. Load next checkpoint
+                            List<Checkpoint> checkpoints = level.getCheckpoints();
+                            Checkpoint chkpt = checkpoints.get(1);
+
+                            // 3. Compute vector
+                            Location targetLocation = new Location("next checkpoint");
+                            targetLocation.setLongitude(chkpt.getLongitude());
+                            targetLocation.setLatitude(chkpt.getLatitude());
+
+                            float distance = currentLocation.distanceTo(targetLocation);
+                            Log.d(TAG, "distance: " + distance);
+
+                            double deltaLong = Math.abs(targetLocation.getLongitude() - currentLocation.getLongitude());
+                            double deltaLat = Math.abs(targetLocation.getLatitude() - currentLocation.getLatitude());
+                            double angle = Math.atan2(deltaLong, deltaLat) * (180.0 / Math.PI);
+
+                            Log.d(TAG, "angle: " + angle);
+
+                            // 4. Send vector
+                            fireNewVector("distance fired: " + distance);
+
+
+                        }
+                    }.execute();
+
+                    // wait between each iteration
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
@@ -117,6 +158,10 @@ public class GameService extends Service implements LocationListener {
 
     @Override
     public IBinder onBind(Intent intent) {
+        String lvl = intent.getStringExtra(GameActivity.LEVEL_TO_LOAD_KEY);
+        if (lvl != null) {
+            this.levelName = lvl;
+        }
         return this.binder;
     }
 

@@ -19,16 +19,17 @@ import ch.hes_so.master.phonerally.level.Checkpoint;
 import ch.hes_so.master.phonerally.level.Level;
 import ch.hes_so.master.phonerally.level.LevelConstants;
 import ch.hes_so.master.phonerally.level.LevelLoader;
-import ch.hes_so.master.phonerally.select_levels.SelectLevelActivity;
 
 public class GameActivity extends Activity implements GameService.IGameService {
     private static final String TAG = GameActivity.class.getSimpleName();
+    public static final String LEVEL_TO_LOAD_KEY = "level_to_load";
 
     private ListView checkpointsListView;
     private CheckpointAdapter checkpointAdapter;
 
     private boolean bounded;
     private GameService gameService;
+    private String levelToLoad;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +43,7 @@ public class GameActivity extends Activity implements GameService.IGameService {
         Bundle bundle = getIntent().getExtras();
         //get level to load from SelectLevelActivity
         String defaultLevel = LevelConstants.LEVEL_PREFIX + "1";
-        String levelToLoad = bundle.getString(SelectLevelActivity.LEVEL_TO_LOAD_KEY, defaultLevel);
+        this.levelToLoad = bundle.getString(GameActivity.LEVEL_TO_LOAD_KEY, defaultLevel);
         Toast.makeText(GameActivity.this, "I must load level: " + levelToLoad, Toast.LENGTH_LONG).show();
 
         checkpointAdapter = new CheckpointAdapter(this);
@@ -68,6 +69,8 @@ public class GameActivity extends Activity implements GameService.IGameService {
         super.onStart();
         Log.d(TAG, "startGameService");
         Intent gameServiceIntent = new Intent(getApplicationContext(), GameService.class);
+        gameServiceIntent.putExtra(GameActivity.LEVEL_TO_LOAD_KEY, this.levelToLoad);
+        // TODO: 30.04.16 add checkpoint extra too
         bindService(gameServiceIntent, serviceConn, BIND_AUTO_CREATE);
     }
 

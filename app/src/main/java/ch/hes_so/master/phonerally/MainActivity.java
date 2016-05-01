@@ -130,6 +130,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "onDestroy");
         super.onDestroy();
         if (mChatService != null) {
             mChatService.stop();

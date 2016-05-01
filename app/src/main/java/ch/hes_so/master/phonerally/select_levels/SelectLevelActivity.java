@@ -22,7 +22,6 @@ import ch.hes_so.master.phonerally.R;
 import ch.hes_so.master.phonerally.game.GameActivity;
 
 public class SelectLevelActivity extends Activity {
-    public static final String LEVEL_TO_LOAD_KEY = "level_to_load";
     private static final String TAG = SelectLevelActivity.class.getSimpleName();
     private ListView mLevelListView;
     private LevelAdapter levelAdapter;
@@ -52,7 +51,7 @@ public class SelectLevelActivity extends Activity {
 
                 // start GameActivity with the selected level
                 Intent intent = new Intent(SelectLevelActivity.this, GameActivity.class);
-                intent.putExtra(LEVEL_TO_LOAD_KEY, clickedItem.getResourceId());
+                intent.putExtra(GameActivity.LEVEL_TO_LOAD_KEY, clickedItem.getResourceId());
                 startActivity(intent);
             }
         });
