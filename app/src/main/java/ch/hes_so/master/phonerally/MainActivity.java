@@ -36,8 +36,8 @@ import java.util.ArrayList;
 
 import ch.hes_so.glassrallylibs.bluetooth.BluetoothChatService;
 import ch.hes_so.glassrallylibs.bluetooth.Constants;
-import ch.hes_so.glassrallylibs.bluetooth.command.Command;
-import ch.hes_so.glassrallylibs.bluetooth.command.CommandFactory;
+import ch.hes_so.glassrallylibs.command.Command;
+import ch.hes_so.glassrallylibs.command.CommandFactory;
 import ch.hes_so.master.phonerally.bluetooth.DeviceListActivity;
 import ch.hes_so.master.phonerally.select_levels.SelectLevelActivity;
 
