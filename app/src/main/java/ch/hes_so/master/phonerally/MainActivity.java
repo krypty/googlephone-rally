@@ -34,7 +34,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.ArrayList;
 
-import ch.hes_so.glassrallylibs.bluetooth.BluetoothChatService;
+import ch.hes_so.glassrallylibs.bluetooth.BluetoothThread;
 import ch.hes_so.glassrallylibs.bluetooth.Constants;
 import ch.hes_so.glassrallylibs.command.Command;
 import ch.hes_so.glassrallylibs.command.CommandFactory;
@@ -62,7 +62,7 @@ public class MainActivity extends Activity {
     /**
      * Member object for the chat services
      */
-    private BluetoothChatService mChatService = null;
+    private BluetoothThread mChatService = null;
 
     //Location permissions
     private static final int REQUEST_CODE_SOME_FEATURES_PERMISSIONS = 666;
@@ -100,7 +100,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 // TODO: 31.03.16 uncomment this
-//                if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+//                if (mChatService.getState() != BluetoothThread.STATE_CONNECTED) {
 //                    Toast.makeText(getApplicationContext(), R.string.not_connected, Toast.LENGTH_SHORT).show();
 //                    return;
 //                }
@@ -146,7 +146,7 @@ public class MainActivity extends Activity {
         // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
         if (mChatService != null) {
             // Only if the state is STATE_NONE, do we know that we haven't started already
-            if (mChatService.getState() == BluetoothChatService.STATE_NONE) {
+            if (mChatService.getState() == BluetoothThread.STATE_NONE) {
                 // Start the Bluetooth chat services
                 mChatService.start();
             }
@@ -181,8 +181,8 @@ public class MainActivity extends Activity {
     private void setupChat() {
         Log.d(TAG, "setupChat()");
 
-        // Initialize the BluetoothChatService to perform bluetooth connections
-        mChatService = new BluetoothChatService(getApplicationContext(), mHandler);
+        // Initialize the BluetoothThread to perform bluetooth connections
+        mChatService = new BluetoothThread(getApplicationContext(), mHandler);
     }
 
     /**
@@ -192,14 +192,14 @@ public class MainActivity extends Activity {
      */
     private void sendMessage(String message) {
         // Check that we're actually connected before trying anything
-        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+        if (mChatService.getState() != BluetoothThread.STATE_CONNECTED) {
             Toast.makeText(getApplicationContext(), R.string.not_connected, Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Check that there's actually something to send
         if (message.length() > 0) {
-            // Get the message bytes and tell the BluetoothChatService to write
+            // Get the message bytes and tell the BluetoothThread to write
             Command cmd = CommandFactory.createDebugCommand(message);
             mChatService.write(cmd);
         }
@@ -271,7 +271,7 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * The Handler that gets information back from the BluetoothChatService
+     * The Handler that gets information back from the BluetoothThread
      */
     private final Handler mHandler = new Handler() {
         @Override
@@ -279,14 +279,14 @@ public class MainActivity extends Activity {
             switch (msg.what) {
                 case Constants.MESSAGE_STATE_CHANGE:
                     switch (msg.arg1) {
-                        case BluetoothChatService.STATE_CONNECTED:
+                        case BluetoothThread.STATE_CONNECTED:
                             setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
                             break;
-                        case BluetoothChatService.STATE_CONNECTING:
+                        case BluetoothThread.STATE_CONNECTING:
                             setStatus(R.string.title_connecting);
                             break;
-                        case BluetoothChatService.STATE_LISTEN:
-                        case BluetoothChatService.STATE_NONE:
+                        case BluetoothThread.STATE_LISTEN:
+                        case BluetoothThread.STATE_NONE:
                             setStatus(R.string.title_not_connected);
                             break;
                     }
