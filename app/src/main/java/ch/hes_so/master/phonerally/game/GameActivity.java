@@ -128,7 +128,7 @@ public class GameActivity extends Activity implements GameService.IGameService {
     }
 
     @Override
-    public void onNextVectorComputed(String msg) {
-        Log.d(TAG, msg);
+    public void onDistanceChanged(float distance) {
+        Log.d(TAG, "distance: " + distance);
     }
 }

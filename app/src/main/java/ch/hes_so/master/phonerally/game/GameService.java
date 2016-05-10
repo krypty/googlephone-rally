@@ -34,6 +34,7 @@ public class GameService extends Service implements LocationListener, BluetoothS
     private IGameService callback;
     private boolean isRunning = false;
     private Location currentLocation;
+    private Location targetLocation;
     private LocationManager locationManager;
     private String levelName;
 
@@ -129,14 +130,8 @@ public class GameService extends Service implements LocationListener, BluetoothS
         public void run() {
             while (isRunning) {
                 try {
-                    String msg = "I'm alive !";
-                    fireNewVector(msg);
-
                     // 1. Load level
                     new LevelLoader(getApplicationContext(), levelName) {
-                        // greater than 360 so it will be sent the first time
-                        public double currentAngle = 500;
-
                         @Override
                         protected void onPostExecute(Level level) {
                             // GPS is not fixed yet
@@ -146,34 +141,21 @@ public class GameService extends Service implements LocationListener, BluetoothS
 
                             // 2. Load next checkpoint
                             List<Checkpoint> checkpoints = level.getCheckpoints();
-                            Checkpoint chkpt = checkpoints.get(1);
+                            Checkpoint chkpt = checkpoints.get(0);
 
-                            // 3. Compute vector
-                            Location targetLocation = new Location("next checkpoint");
+                            // 3. Send current and target position
+                            targetLocation = new Location("next checkpoint");
                             targetLocation.setLongitude(chkpt.getLongitude());
                             targetLocation.setLatitude(chkpt.getLatitude());
 
                             float distance = currentLocation.distanceTo(targetLocation);
                             Log.d(TAG, "distance: " + distance);
 
-                            double deltaLong = Math.abs(targetLocation.getLongitude() - currentLocation.getLongitude());
-                            double deltaLat = Math.abs(targetLocation.getLatitude() - currentLocation.getLatitude());
-                            double angle = Math.atan2(deltaLong, deltaLat) * (180.0 / Math.PI);
+                            // notify GUI with new distance
+                            fireNewDistance(distance);
 
-                            Log.d(TAG, "angle: " + angle);
-
-                            // 4. Send vector
-
-//                            // don't send the angle if still the same
-//                            if (Math.abs(currentAngle - angle) < 1e3) {
-//                                return;
-//                            }
-
-                            currentAngle = angle;
-                            fireNewVector("distance fired: " + distance);
-                            sendVector(currentAngle);
-
-
+                            // send the current and target location to the Glass
+                            sendVector(currentLocation, targetLocation);
                         }
                     }.execute();
 
@@ -187,12 +169,13 @@ public class GameService extends Service implements LocationListener, BluetoothS
         }
     };
 
-    private void sendVector(double angle) {
+    private void sendVector(Location currentLocation, Location targetLocation) {
         if (!btService.isConnected()) {
             Log.e(TAG, "bluetooth device not connected !");
+            return;
         }
 
-        Command cmd = CommandFactory.createDebugCommand("angle: " + angle);
+        Command cmd = CommandFactory.createVectorCommand(currentLocation, targetLocation);
         btService.sendCommand(cmd);
     }
 
@@ -203,7 +186,6 @@ public class GameService extends Service implements LocationListener, BluetoothS
 
         if (LocationUtils.isBetterLocation(location, currentLocation)) {
             currentLocation = location;
-            fireNewVector("better location: " + currentLocation);
         }
     }
 
@@ -239,14 +221,14 @@ public class GameService extends Service implements LocationListener, BluetoothS
     }
 
     public interface IGameService {
-        void onNextVectorComputed(String msg);
+        void onDistanceChanged(float distance);
     }
 
-    private void fireNewVector(String msg) {
+    private void fireNewDistance(float distance) {
         if (this.callback == null)
             return;
 
-        this.callback.onNextVectorComputed(msg);
+        this.callback.onDistanceChanged(distance);
     }
 
     public void register(IGameService callback) {
