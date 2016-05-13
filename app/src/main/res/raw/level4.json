@@ -1,0 +1,29 @@
+{
+  "name": "Neuch Rally",
+  "checkpoints": [
+    {
+      "lat": 46.997078, 
+      "long": 6.937433,
+      "range": 10,
+      "content": "https://s-media-cache-ak0.pinimg.com/736x/27/df/cc/27dfcc17a8cefe56c99277d63be0d815.jpg"
+    },
+    {
+      "lat": 46.997532, 
+      "long": 6.938730,
+      "range": 20,
+      "content": "https://s-media-cache-ak0.pinimg.com/736x/77/40/e5/7740e5d0745f9661170ca81620bd548e.jpg"
+    },
+    {
+      "lat": 46.998018, 
+      "long": 6.940186,
+      "range": 30,
+      "content": "https://s-media-cache-ak0.pinimg.com/736x/52/70/9b/52709b0346a2b23ad23c4ac39767fa0b.jpg"
+    },
+	{
+      "lat": 46.997483, 
+      "long": 6.938590,
+      "range": 5,
+      "content": "http://wanna-joke.com/wp-content/uploads/2014/02/funny-picture-brain-cat.jpg"
+    }
+  ]
+}

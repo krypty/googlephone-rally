@@ -1,0 +1,41 @@
+{
+  "name": "Provence Rally",
+  "checkpoints": [
+    {
+      "lat": 46.523381, 
+      "long": 6.608115,
+      "range": 10,
+      "content": "https://pbs.twimg.com/profile_images/378800000822867536/3f5a00acf72df93528b6bb7cd0a4fd0c.jpeg"
+    },
+    {
+      "lat": 46.523060,
+      "long":  6.610359,
+      "range": 20,
+      "content": "https://i.ytimg.com/vi/8M7Qie4Aowk/hqdefault.jpg"
+    },
+    {
+      "lat": 46.523442,
+      "long": 6.611347, 
+      "range": 30,
+      "content": "https://cdn.thinglink.me/api/image/727110550026190849/1240/10/scaletowidth"
+    },
+	{
+      "lat": 46.524027,
+      "long":  6.609644,
+      "range": 5,
+      "content": "https://cdn2.scratch.mit.edu/get_image/gallery/1152106_200x130.png"
+    },
+	{
+      "lat": 46.524141,
+      "long": 6.608319,
+      "range": 5,
+      "content": "https://media.giphy.com/media/wZWKSfPaFhNSw/giphy.gif"
+    },
+	{
+      "lat": 46.523131,
+      "long": 6.610014
+      "range": 5,
+      "content": "https://elizabethandangelica.files.wordpress.com/2014/04/follow-your-dreams.jpg"
+    }
+  ]
+}
