@@ -130,5 +130,16 @@ public class GameActivity extends Activity implements GameService.IGameService {
     @Override
     public void onDistanceChanged(float distance) {
         Log.d(TAG, "distance: " + distance);
+        checkpointAdapter.setDistance(distance);
+    }
+
+    @Override
+    public void onVictory() {
+        Log.d(TAG, "VICTORY !!");
+    }
+
+    @Override
+    public void onCheckpointReached(Checkpoint chkpt) {
+        checkpointAdapter.markCheckpointAsReached();
     }
 }

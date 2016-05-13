@@ -27,6 +27,7 @@ import ch.hes_so.master.phonerally.level.LevelLoader;
 
 public class GameService extends Service implements LocationListener, BluetoothService.IBluetoothService {
     private static final String TAG = GameService.class.getSimpleName();
+    public static final int POLLING_RATE = 5000;
 
     // Binder given to clients
     private Binder gameBinder = new Binder();
@@ -37,6 +38,7 @@ public class GameService extends Service implements LocationListener, BluetoothS
     private Location targetLocation;
     private LocationManager locationManager;
     private String levelName;
+    private int currentChkpt = 0;
 
     private BluetoothService btService;
     private boolean bounded;
@@ -139,11 +141,19 @@ public class GameService extends Service implements LocationListener, BluetoothS
                                 return;
                             }
 
-                            // 2. Load next checkpoint
+                            // 2. Check if last checkpoint has been reached
                             List<Checkpoint> checkpoints = level.getCheckpoints();
-                            Checkpoint chkpt = checkpoints.get(0);
 
-                            // 3. Send current and target position
+                            if (checkpoints.size() < currentChkpt) {
+                                triggerVictory();
+                                isRunning = false;
+                                return;
+                            }
+
+                            // 3. Load next checkpoint
+                            Checkpoint chkpt = checkpoints.get(currentChkpt);
+
+                            // 4. Send current and target position
                             targetLocation = new Location("next checkpoint");
                             targetLocation.setLongitude(chkpt.getLongitude());
                             targetLocation.setLatitude(chkpt.getLatitude());
@@ -154,13 +164,21 @@ public class GameService extends Service implements LocationListener, BluetoothS
                             // notify GUI with new distance
                             fireNewDistance(distance);
 
-                            // send the current and target location to the Glass
-                            sendVector(currentLocation, targetLocation);
+
+                            // 5. Send reward or vector
+                            if (distance < chkpt.getRange()) {
+                                currentChkpt++;
+                                triggerReward(chkpt);
+                            } else {
+                                // send the current and target location to the Glass
+                                sendVector(currentLocation, targetLocation);
+                            }
+
                         }
                     }.execute();
 
                     // wait between each iteration
-                    Thread.sleep(5000);
+                    Thread.sleep(POLLING_RATE);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
@@ -168,6 +186,34 @@ public class GameService extends Service implements LocationListener, BluetoothS
             }
         }
     };
+
+    private void triggerReward(Checkpoint chkpt) {
+        sendReward(chkpt.getContent());
+        fireReward(chkpt);
+    }
+
+    private void triggerVictory() {
+        sendVictory();
+        fireVictory();
+    }
+
+    private void sendReward(String reward) {
+        if (!btService.isConnected()) {
+            Log.e(TAG, "bluetooth device not connected !");
+            return;
+        }
+        Command cmd = CommandFactory.createRewardCommand(reward);
+        btService.sendCommand(cmd);
+    }
+
+    private void sendVictory() {
+        if (!btService.isConnected()) {
+            Log.e(TAG, "bluetooth device not connected !");
+            return;
+        }
+        Command cmd = CommandFactory.createVictoryCommand();
+        btService.sendCommand(cmd);
+    }
 
     private void sendVector(Location currentLocation, Location targetLocation) {
         if (!btService.isConnected()) {
@@ -222,6 +268,10 @@ public class GameService extends Service implements LocationListener, BluetoothS
 
     public interface IGameService {
         void onDistanceChanged(float distance);
+
+        void onVictory();
+
+        void onCheckpointReached(Checkpoint chkpt);
     }
 
     private void fireNewDistance(float distance) {
@@ -240,5 +290,19 @@ public class GameService extends Service implements LocationListener, BluetoothS
             this.callback = null;
         else
             Log.w(TAG, "no previous callback was registered");
+    }
+
+    private void fireVictory() {
+        if (this.callback == null)
+            return;
+
+        this.callback.onVictory();
+    }
+
+    private void fireReward(Checkpoint chkpt) {
+        if (this.callback == null)
+            return;
+
+        this.callback.onCheckpointReached(chkpt);
     }
 }

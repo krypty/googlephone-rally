@@ -1,6 +1,8 @@
 package ch.hes_so.master.phonerally.level;
 
 public class Checkpoint {
+    private static final double EPSILON = 1e6;
+
     private double latitude;
     private double longitude;
     private int range;
@@ -22,6 +24,26 @@ public class Checkpoint {
         this.range = range;
         this.content = content;
         this.reached = false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+
+        if (!(o instanceof Checkpoint)) {
+            return false;
+        }
+
+        Checkpoint other = (Checkpoint) o;
+
+        boolean isEquals = true;
+        isEquals &= Math.abs(this.latitude - other.latitude) < EPSILON;
+        isEquals &= Math.abs(this.longitude - other.longitude) < EPSILON;
+        isEquals &= this.range == other.range;
+        isEquals &= this.content.equals(other.content);
+
+        return isEquals;
     }
 
     public void setReached(boolean reached) {

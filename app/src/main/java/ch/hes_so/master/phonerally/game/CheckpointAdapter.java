@@ -8,18 +8,24 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ch.hes_so.master.phonerally.R;
 import ch.hes_so.master.phonerally.level.Checkpoint;
 
 public class CheckpointAdapter extends ArrayAdapter<Checkpoint> {
     private final Context mContext;
+    private List<Checkpoint> listCheckpoints;
+    private int currentCheckpointPosition;
+    private float distance = -1;
 
     public CheckpointAdapter(Context context) {
         super(context, android.R.layout.activity_list_item);
         mContext = context;
 
-//        // reverse array to make items appear bottom to top
-//        mValues = reverseArray(values);
+        listCheckpoints = new ArrayList<>();
+        this.currentCheckpointPosition = 0;
     }
 
     @Override
@@ -37,10 +43,22 @@ public class CheckpointAdapter extends ArrayAdapter<Checkpoint> {
         }
 
         TextView checkpointRightLabel = (TextView) rowView.findViewById(R.id.tvCheckpointRight);
-        String rightLabel = checkpoint.getRange() + " {";
+        String rightLabel = "";
+        if (position == currentCheckpointPosition) {
+            rightLabel = getFormattedDistance();
+        }
+
         checkpointRightLabel.setText(rightLabel);
 
         return rowView;
+    }
+
+    private String getFormattedDistance() {
+        if (distance > 10000) {
+            return (int) (distance / 1000) + " km";
+        } else {
+            return (int) distance + " m";
+        }
     }
 
 
@@ -51,5 +69,27 @@ public class CheckpointAdapter extends ArrayAdapter<Checkpoint> {
     public Checkpoint getItem(int position) {
         // reverse items to make items appear bottom to top
         return super.getItem(getCount() - 1 - position);
+    }
+
+
+    @Override
+    public void insert(Checkpoint object, int index) {
+        super.insert(object, index);
+        this.listCheckpoints.add(index, object);
+        currentCheckpointPosition = getCount() - 1;
+    }
+
+    public void markCheckpointAsReached() {
+        Checkpoint chkpt = this.getItem(currentCheckpointPosition);
+        chkpt.setReached(true);
+        currentCheckpointPosition++;
+
+        notifyDataSetChanged();
+    }
+
+    public void setDistance(float distance) {
+        this.distance = distance;
+
+        notifyDataSetChanged();
     }
 }
