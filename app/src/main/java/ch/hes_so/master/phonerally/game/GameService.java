@@ -167,7 +167,7 @@ public class GameService extends Service implements LocationListener, BluetoothS
 
                             // 5. Send reward or vector
                             if (distance < chkpt.getRange()) {
-                                currentChkpt++;
+                                currentChkpt = (currentChkpt + 1) % checkpoints.size();
                                 triggerReward(chkpt);
                             } else {
                                 // send the current and target location to the Glass

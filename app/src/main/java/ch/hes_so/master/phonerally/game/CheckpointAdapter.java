@@ -1,6 +1,7 @@
 package ch.hes_so.master.phonerally.game;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import ch.hes_so.master.phonerally.R;
 import ch.hes_so.master.phonerally.level.Checkpoint;
 
 public class CheckpointAdapter extends ArrayAdapter<Checkpoint> {
+    private static final String TAG = CheckpointAdapter.class.getSimpleName();
     private final Context mContext;
     private List<Checkpoint> listCheckpoints;
     private int currentCheckpointPosition;
@@ -54,7 +56,7 @@ public class CheckpointAdapter extends ArrayAdapter<Checkpoint> {
     }
 
     private String getFormattedDistance() {
-        if (distance > 10000) {
+        if (distance > 1000) {
             return (int) (distance / 1000) + " km";
         } else {
             return (int) distance + " m";
@@ -80,9 +82,14 @@ public class CheckpointAdapter extends ArrayAdapter<Checkpoint> {
     }
 
     public void markCheckpointAsReached() {
-        Checkpoint chkpt = this.getItem(currentCheckpointPosition);
+        if (currentCheckpointPosition < 0 || currentCheckpointPosition >= listCheckpoints.size()) {
+            Log.e(TAG, "invalid checkpoint position !");
+            currentCheckpointPosition = 0;
+            return;
+        }
+        Checkpoint chkpt = this.listCheckpoints.get(currentCheckpointPosition);
         chkpt.setReached(true);
-        currentCheckpointPosition++;
+        currentCheckpointPosition--;
 
         notifyDataSetChanged();
     }
