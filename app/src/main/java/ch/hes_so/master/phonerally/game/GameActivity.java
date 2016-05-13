@@ -5,7 +5,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Window;
@@ -50,18 +49,6 @@ public class GameActivity extends Activity implements GameService.IGameService {
         checkpointsListView.setAdapter(checkpointAdapter);
 
         buildCheckpointList(levelToLoad);
-
-        // TODO: 31.03.16 remove me: draft code to update the list adapter
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                checkpointAdapter.getItem(0).setReached(true);
-                checkpointAdapter.notifyDataSetChanged();
-            }
-
-        }, 2000); // 2000ms delay
     }
 
     @Override
