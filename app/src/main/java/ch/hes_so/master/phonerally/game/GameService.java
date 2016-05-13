@@ -162,7 +162,7 @@ public class GameService extends Service implements LocationListener, BluetoothS
                             Log.d(TAG, "distance: " + distance);
 
                             // notify GUI with new distance
-                            fireNewDistance(distance);
+                            triggerDistance(distance);
 
 
                             // 5. Send reward or vector
@@ -186,6 +186,11 @@ public class GameService extends Service implements LocationListener, BluetoothS
             }
         }
     };
+
+    private void triggerDistance(float distance) {
+        sendDistance(distance);
+        fireNewDistance(distance);
+    }
 
     private void triggerReward(Checkpoint chkpt) {
         sendReward(chkpt.getContent());
@@ -222,6 +227,16 @@ public class GameService extends Service implements LocationListener, BluetoothS
         }
 
         Command cmd = CommandFactory.createVectorCommand(currentLocation, targetLocation);
+        btService.sendCommand(cmd);
+    }
+
+    private void sendDistance(float distance) {
+        if (!btService.isConnected()) {
+            Log.e(TAG, "bluetooth device not connected !");
+            return;
+        }
+
+        Command cmd = CommandFactory.createDistanceCommand(distance);
         btService.sendCommand(cmd);
     }
 
