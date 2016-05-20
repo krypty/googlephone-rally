@@ -15,11 +15,13 @@ import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
+import java.sql.Time;
 import java.util.List;
 
 import ch.hes_so.glassrallylibs.bluetooth.BluetoothService;
 import ch.hes_so.glassrallylibs.command.Command;
 import ch.hes_so.glassrallylibs.command.CommandFactory;
+import ch.hes_so.master.phonerally.Vibrator.VibratorManager;
 import ch.hes_so.master.phonerally.geolocation.LocationUtils;
 import ch.hes_so.master.phonerally.level.Checkpoint;
 import ch.hes_so.master.phonerally.level.Level;
@@ -43,6 +45,8 @@ public class GameService extends Service implements LocationListener, BluetoothS
     private BluetoothService btService;
     private boolean bounded;
 
+    private VibratorManager vibrator;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -61,7 +65,11 @@ public class GameService extends Service implements LocationListener, BluetoothS
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 
+
         setupBluetoothService();
+
+        vibrator = new VibratorManager(this);
+        vibrator.startVibrationLoop();
 
         startGameLoop();
     }
@@ -69,6 +77,7 @@ public class GameService extends Service implements LocationListener, BluetoothS
     @Override
     public void onDestroy() {
         this.isRunning = false;
+        vibrator.stopVibrationLoop();
         Log.d(TAG, "onDestroy");
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -128,9 +137,9 @@ public class GameService extends Service implements LocationListener, BluetoothS
     }
 
     private Runnable gameLoop = new Runnable() {
-        @Override
-        public void run() {
-            while (isRunning) {
+                @Override
+                public void run() {
+                    while (isRunning) {
                 try {
                     // 1. Load level
                     new LevelLoader(getApplicationContext(), levelName) {
@@ -147,6 +156,7 @@ public class GameService extends Service implements LocationListener, BluetoothS
                             if (checkpoints.size() < currentChkpt) {
                                 triggerVictory();
                                 isRunning = false;
+                                vibrator.stopVibrationLoop();
                                 return;
                             }
 
@@ -163,7 +173,8 @@ public class GameService extends Service implements LocationListener, BluetoothS
 
                             // notify GUI with new distance
                             triggerDistance(distance);
-
+                            // notify the vibrator as well
+                            vibrator.setDistance(distance);
 
                             // 5. Send reward or vector
                             if (distance < chkpt.getRange()) {
