@@ -4,32 +4,20 @@
     {
       "lat": 46.923759,
       "long": 6.809884,
-      "range": 10,
+      "range": 40,
       "content": "http://www.automobilesalfio.ch/fichiers/photo%20accueil.jpg"
     },
     {
       "lat": 46.920740,
       "long": 6.807707,
-      "range": 10,
+      "range": 30,
       "content": "http://www.landi.ch/Frontend/Landi/Images/Landi_Logo.jpg"
     },
     {
       "lat": 46.926435,
       "long": 6.813896,
-      "range": 15,
+      "range": 30,
       "content": "http://www.dubat.ch/img/logoDubat.png"
-    },
-    {
-      "lat": 46.928962,
-      "long": 6.812278,
-      "range": 15,
-      "content": "https://upload.wikimedia.org/wikipedia/fr/thumb/d/d3/Logo_Coop.svg/602px-Logo_Coop.svg.png"
-    },
-    {
-      "lat": 46.924825,
-      "long": 6.807691,
-      "range": 10,
-      "content": "http://echo.jsontest.com/key/value/maison/rose"
     }
   ]
 }
